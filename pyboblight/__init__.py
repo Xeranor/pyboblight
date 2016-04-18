@@ -3,8 +3,8 @@ import time
 import random
 
 
-class BobCLient(object):
-    def __init__(self,host='127.0.0.1',port=19333,priority=128):
+class BobClient(object):
+    def __init__(self,host='127.0.0.1',port=19333,priority=128,verbose=False):
         self.host=host
         self.port=port
         self.lights={}
@@ -12,7 +12,7 @@ class BobCLient(object):
         self.file=None
         self.sock=None
         self.socketerror=False
-        self.do_debug=False
+        self.do_debug=verbose
         self.handshake()
 
     def debug(self,msg):
@@ -143,7 +143,7 @@ class Light(object):
 
 if __name__=='__main__':
     #initialize
-    client=BobCLient()
+    client=BobClient()
 
     #print light information
     print(client.lights)
