@@ -2,7 +2,7 @@ import socket
 import logging
 import time
 import random
-
+import re
 
 class BobClient(object):
     def __init__(self,host='127.0.0.1',port=19333,priority=128,verbose=False):
@@ -77,19 +77,21 @@ class BobClient(object):
         assert ans[0]=='lights',"Expected 'lights <num>' but got '%s'"%ans
         nlights=int(ans[1])
 
-        tempdic={}
+        p = re.compile("([a-z]*)(\d*)")
+        tempdic={'start':list(), 'top':list(), 'right':list(), 'left':list()}
         for i in range(nlights):
             linfo=self.readline().split()
             assert len(linfo)==7
             assert linfo[0]=='light'
             assert linfo[2]=='scan'
             kw1,name,kw2,vmin,vmax,hmin,hmax=linfo
+            match = p.match(name)
             l=Light(name, self)
             l.hmin=hmin
             l.hmax=hmax
             l.vmin=vmin
             l.vmax=vmax
-            tempdic[name]=l
+            tempdic[match.group(1)].insert(int(match.group(2)),l)
         self.lights=tempdic
         logging.debug("Got {} lights".format(len(self.lights)))
 
@@ -110,8 +112,9 @@ class BobClient(object):
 
 
     def update(self):
-        for k,light in self.lights.items():
-            self._prepare_rgb_color(light.name, light.r, light.g, light.b)
+        for side in self.lights:
+            for light in self.lights[side]:
+                self._prepare_rgb_color(light.name, light.r, light.g, light.b)
         self._sync()
 
 class Light(object):
@@ -150,7 +153,10 @@ if __name__=='__main__':
     while time.time()<stop:
         time.sleep(0.1)
         #prepare the light color changes
+        for light in client.lights['top']:
+            light.set_color(255,255,255)
+        client.update()
+
         #for name,light in client.lights.items():
         #    light.set_color(random.randint(0,255),random.randint(0,255),random.randint(0,255))
         #tell the client to update the current light color state on the server
-        client.update()
