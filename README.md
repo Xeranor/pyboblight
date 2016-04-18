@@ -10,8 +10,6 @@ Status
 
  * enumerate lights: OK
  * send RGB color values to server: OK 
- * change advanced settings (speed, interpolation ): TODO
- * helper functions : (image average, screen grabber, ...): TODO
 
 
 Example
