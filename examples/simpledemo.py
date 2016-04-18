@@ -1,15 +1,13 @@
-#!/usr/bin/env python2
 import pyboblight
 import time
 import random
 
 if __name__=='__main__':
-    #initialize
-    client=pyboblight.BobCLient('192.168.23.56')
-    
+    client=pyboblight.BobCLient()
+
     #print light information
     print client.lights
-    
+
     #send random colors for 20 seconds
     now=time.time()
     stop=now+20
