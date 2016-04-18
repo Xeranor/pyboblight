@@ -23,7 +23,7 @@ class BobCLient(object):
     def debug(self,msg):
         if not self.do_debug:
             return
-        print msg
+        print(msg)
         
     def send_command(self,command):
         if not self.is_connected():
@@ -31,8 +31,8 @@ class BobCLient(object):
         
         self.debug("SND: %s"%command)
         try:
-            self.sock.send(command)
-            self.sock.sendall('\r\n')
+            self.sock.send(bytes(command,'utf-8'))
+            self.sock.sendall(b'\r\n')
         except:
             self.socketerror=True
     
@@ -121,7 +121,7 @@ class BobCLient(object):
 
     def update(self):
         """sent current light state to server"""
-        for k,light in self.lights.iteritems():
+        for k,light in self.lights.items():
             self._prepare_rgb_color(light.name, light.r, light.g, light.b)
         self._sync()
     
@@ -158,7 +158,7 @@ if __name__=='__main__':
     client=BobCLient('192.168.23.56')
     
     #print light information
-    print client.lights
+    print(client.lights)
     
     #send random colors for 20 seconds
     now=time.time()
@@ -166,7 +166,7 @@ if __name__=='__main__':
     while time.time()<stop:
         time.sleep(0.1)
         #prepare the light color changes
-        for name,light in client.lights.iteritems():
+        for name,light in client.lights.items():
             light.set_color(random.randint(0,255),random.randint(0,255),random.randint(0,255))
         #tell the client to update the current light color state on the server
         client.update()
