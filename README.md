@@ -1,8 +1,8 @@
 pyboblight
 ==========
 
-simple python client library to talk to a boblight daemon 
-(https://code.google.com/p/boblight/)
+
+Python 3 port of gryphius' [pyboblight](https://github.com/gryphius/pyboblight)
 
 
 Status
@@ -17,7 +17,6 @@ Status
 Example
 -------
 
-    #!/usr/bin/env python2
     import pyboblight
     import time
     import random
@@ -27,7 +26,7 @@ Example
         client=pyboblight.BobCLient('192.168.23.56')
         
         #print light information
-        print client.lights
+        print(client.lights)
         
         #send random colors for 20 seconds
         now=time.time()
