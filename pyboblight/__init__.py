@@ -1,10 +1,12 @@
 import socket
+import logging
 import time
 import random
 
 
 class BobClient(object):
     def __init__(self,host='127.0.0.1',port=19333,priority=128,verbose=False):
+        logging.debug("Connecting to {}:{}".format(host,port))
         self.host=host
         self.port=port
         self.lights={}
@@ -12,18 +14,14 @@ class BobClient(object):
         self.file=None
         self.sock=None
         self.socketerror=False
-        self.do_debug=verbose
+        self.verbose = verbose
         self.handshake()
-
-    def debug(self,msg):
-        if not self.do_debug:
-            return
-        print(msg)
 
     def send_command(self,command):
         if not self.is_connected():
             self.reconnect()
-        self.debug("SND: %s"%command)
+        if self.verbose:
+            logging.debug("SND: %s"%command)
         try:
             self.sock.send(bytes(command,'utf-8'))
             self.sock.sendall(b'\r\n')
@@ -33,7 +31,8 @@ class BobClient(object):
     def readline(self):
         try:
             msg=self.file.readline().strip()
-            self.debug("RCV: %s"%msg)
+            if self.verbose:
+                logging.debug("RCV: %s"%msg)
             return msg
         except:
             self.socketerror=True
@@ -52,6 +51,7 @@ class BobClient(object):
         return socket.create_connection((self.host, self.port))
 
     def reconnect(self):
+        logging.debug("Reconnecting")
         self.sock = self._create_socket()
         self.file = self.sock.makefile('rw')
         self.socketerror=False
@@ -91,6 +91,7 @@ class BobClient(object):
             l.vmax=vmax
             tempdic[name]=l
         self.lights=tempdic
+        logging.debug("Got {} lights".format(len(self.lights)))
 
     def handshake(self):
         if not self.is_connected():
@@ -98,8 +99,8 @@ class BobClient(object):
         self.send_command('hello')
         ret=self.readline()
         if ret!='hello':
-            raise Exception("hello failed")
-        self.send_command("set priority %s"%self.priority)
+            raise Exception("Handshake failed")
+        self.send_command("set priority {}".format(self.priority))
         #refresh server info
         if self.get_num_lights()==0:
             self.refresh_lights_info()
@@ -109,14 +110,11 @@ class BobClient(object):
 
 
     def update(self):
-        """sent current light state to server"""
         for k,light in self.lights.items():
             self._prepare_rgb_color(light.name, light.r, light.g, light.b)
         self._sync()
 
 class Light(object):
-    """Represents a single light"""
-
     def __init__(self,name,client):
         self.client=client
         self.name=name
@@ -136,25 +134,23 @@ class Light(object):
         self.b=b
 
     def __str__(self):
-        return """<Light name='%s' hscan='%s-%s' vscan='%s-%s' color='%s/%s/%s'>"""%(self.name,self.hmin,self.hmax,self.vmin,self.vmax,self.r,self.g,self.b)
+        return "<Light name='{}' hscan='{}-{}' vscan='{}-{}' color='{}/{}/{}'>".format(self.name,self.hmin,self.hmax,self.vmin,self.vmax,self.r,self.g,self.b)
 
     def __repr__(self):
         return str(self)
 
 if __name__=='__main__':
-    #initialize
+    logging.basicConfig(level=logging.DEBUG)
     client=BobClient()
 
-    #print light information
-    print(client.lights)
-
+    logging.debug(client.lights)
     #send random colors for 20 seconds
     now=time.time()
     stop=now+20
     while time.time()<stop:
         time.sleep(0.1)
         #prepare the light color changes
-        for name,light in client.lights.items():
-            light.set_color(random.randint(0,255),random.randint(0,255),random.randint(0,255))
+        #for name,light in client.lights.items():
+        #    light.set_color(random.randint(0,255),random.randint(0,255),random.randint(0,255))
         #tell the client to update the current light color state on the server
         client.update()
