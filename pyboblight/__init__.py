@@ -116,7 +116,10 @@ class BobClient(object):
             self.refresh_lights_info()
 
     def get_num_lights(self):
-        return len(self.lights)
+        num = 0
+        for key, value in self.lights.items():
+            num += len(value)
+        return len(num)
 
     def update(self):
         for side in self.lights:
