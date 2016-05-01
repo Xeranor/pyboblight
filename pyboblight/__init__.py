@@ -119,7 +119,7 @@ class BobClient(object):
         num = 0
         for key, value in self.lights.items():
             num += len(value)
-        return len(num)
+        return num
 
     def update(self):
         for side in self.lights:
